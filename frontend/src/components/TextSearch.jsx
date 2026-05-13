@@ -11,6 +11,7 @@ import {
 
 export default function TextSearch({ onSearchStart, onResults }) {
   const [text, setText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedSources, setSelectedSources] = useState({
     article: true,
     book: true,
@@ -49,6 +50,7 @@ export default function TextSearch({ onSearchStart, onResults }) {
     e.preventDefault();
     if (!text.trim()) return;
 
+    setIsLoading(true);
     onSearchStart();
     try {
       const response = await fetch('/api/search/text', {
@@ -64,6 +66,8 @@ export default function TextSearch({ onSearchStart, onResults }) {
     } catch (error) {
       console.error('Search failed:', error);
       onResults({ results: [] });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -118,10 +122,10 @@ export default function TextSearch({ onSearchStart, onResults }) {
       {/* submit */}
       <button
         type="submit"
-        className={`submit-button ${text.trim() ? 'enabled' : 'disabled'}`}
-        disabled={!text.trim()}
+        className={`submit-button ${text.trim() && !isLoading ? 'enabled' : 'disabled'}`}
+        disabled={!text.trim() || isLoading}
       >
-        {text.trim() ? 'Find Original Source' : 'Enter Text to Search'}
+        {isLoading ? 'Searching...' : text.trim() ? 'Find original source' : 'Enter text to search'}
       </button>
     </form>
   );
